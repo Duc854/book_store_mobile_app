@@ -1,6 +1,6 @@
 {
-    "name": "book_store_mobile_app",
-    "short_name": "book_store_mobile_app",
+    "name": "web_app",
+    "short_name": "web_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
