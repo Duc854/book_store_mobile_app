@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:test_project/screens/admin_books_screen.dart';
+import 'package:test_project/screens/admin_category_screen.dart';
+
 import 'themes/app_theme.dart';
 import 'screens/admin_dashboard.dart';
 
@@ -15,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: "Book Store",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const AdminDashboard(),
+      home: const AdminCategoryScreen(),
     );
   }
 }

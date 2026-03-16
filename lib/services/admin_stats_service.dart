@@ -4,7 +4,7 @@ import '../models/admin_stats.dart';
 
 class AdminStatsService {
 
-  static const baseUrl="http://localhost:7128/api/admin/stats";
+  static const baseUrl="http://localhost:7128/api/Admin/stats";
 
   static Future<AdminStats> getStats() async{
 
