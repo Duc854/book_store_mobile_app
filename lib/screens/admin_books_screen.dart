@@ -1,3 +1,5 @@
+import 'package:book_store_mobile_app/models/category.dart';
+import 'package:book_store_mobile_app/services/admin_category_service.dart';
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/admin_book_service.dart';
@@ -91,121 +93,221 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
     await loadBooks();
   }
 
-  void showBookDialog({Book? book}) {
-    bool saving = false;
-    TextEditingController title = TextEditingController(text: book?.title);
-    TextEditingController author = TextEditingController(text: book?.author);
-    TextEditingController price = TextEditingController(
-      text: book?.price.toString() ?? "",
-    );
-    TextEditingController stock = TextEditingController(
-      text: book?.stock.toString(),
-    );
-    TextEditingController image = TextEditingController(text: book?.imageUrl);
-    TextEditingController category = TextEditingController(
-      text: book?.categoryId.toString(),
-    );
+  void showBookDialog({Book? book}) async {
+  List<Category> categories = await AdminCategoryService.getCategories();
 
-    showDialog(
-      context: context,
-      builder: (_) {
+  final title = TextEditingController(text: book?.title);
+  final author = TextEditingController(text: book?.author);
+  final price = TextEditingController(text: book?.price.toString());
+  final stock = TextEditingController(text: book?.stock.toString());
+  final image = TextEditingController(text: book?.imageUrl);
+  final description = TextEditingController(text: book?.description);
+
+  int? selectedCategoryId =
+      book?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
+final _formKey = GlobalKey<FormState>();
+  showDialog(
+  context: context,
+  builder: (_) {
+    return StatefulBuilder(
+      builder: (context, setStateDialog) {
         return AlertDialog(
           title: Text(book == null ? "Add Book" : "Edit Book"),
 
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: title,
-                  decoration: const InputDecoration(labelText: "Title"),
-                ),
-                TextField(
-                  controller: author,
-                  decoration: const InputDecoration(labelText: "Author"),
-                ),
-                TextField(
-                  controller: price,
-                  decoration: const InputDecoration(labelText: "Price"),
-                ),
-                TextField(
-                  controller: stock,
-                  decoration: const InputDecoration(labelText: "Stock"),
-                ),
-                TextField(
-                  controller: image,
-                  decoration: const InputDecoration(labelText: "Image URL"),
-                ),
-                TextField(
-                  controller: category,
-                  decoration: const InputDecoration(labelText: "CategoryId"),
-                ),
-              ],
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+
+                  // ===== TITLE =====
+                  TextFormField(
+                    controller: title,
+                    decoration: InputDecoration(labelText: "Title"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Title không được để trống";
+                      }
+                      if (value.length < 3) {
+                        return "Title phải ≥ 3 ký tự";
+                      }
+                      return null;
+                    },
+                  ),
+
+                  // ===== AUTHOR =====
+                  TextFormField(
+                    controller: author,
+                    decoration: InputDecoration(labelText: "Author"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Author không được để trống";
+                      }
+                      return null;
+                    },
+                  ),
+
+                  // ===== DESCRIPTION =====
+                  TextFormField(
+                    controller: description,
+                    decoration: InputDecoration(labelText: "Description"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Description không được để trống";
+                      }
+                      return null;
+                    },
+                  ),
+
+                  // ===== PRICE =====
+                  TextFormField(
+                    controller: price,
+                    decoration: InputDecoration(labelText: "Price"),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Price không được để trống";
+                      }
+
+                      final p = double.tryParse(value);
+                      if (p == null) {
+                        return "Price phải là số";
+                      }
+
+                      if (p <= 0) {
+                        return "Price phải > 0";
+                      }
+
+                      return null;
+                    },
+                  ),
+
+                  // ===== STOCK =====
+                  TextFormField(
+                    controller: stock,
+                    decoration: InputDecoration(labelText: "Stock"),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Stock không được để trống";
+                      }
+
+                      final s = int.tryParse(value);
+                      if (s == null) {
+                        return "Stock phải là số nguyên";
+                      }
+
+                      if (s < 0) {
+                        return "Stock không được âm";
+                      }
+
+                      return null;
+                    },
+                  ),
+
+                  // ===== IMAGE URL =====
+                  TextFormField(
+                    controller: image,
+                    decoration: InputDecoration(labelText: "Image URL"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Image URL không được để trống";
+                      }
+
+                      final uri = Uri.tryParse(value);
+                      if (uri == null || !uri.isAbsolute) {
+                        return "URL không hợp lệ";
+                      }
+
+                      return null;
+                    },
+                  ),
+
+                  // ===== CATEGORY =====
+                  DropdownButtonFormField<int>(
+                    value: selectedCategoryId,
+                    decoration: InputDecoration(labelText: "Category"),
+                    items: categories.map((c) {
+                      return DropdownMenuItem(
+                        value: c.id,
+                        child: Text(c.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setStateDialog(() {
+                        selectedCategoryId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return "Vui lòng chọn category";
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
 
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text("Cancel"),
             ),
 
             ElevatedButton(
-              onPressed: saving
-                  ? null
-                  : () async {
-                      setState(() {
-                        saving = true;
-                      });
+              onPressed: () async {
 
-                      Book newBook = Book(
-                        id: book?.id,
-                        title: title.text,
-                        author: author.text,
-                        description: "",
-                        price: double.parse(price.text),
-                        imageUrl: image.text,
-                        stock: int.parse(stock.text),
-                        categoryId: int.parse(category.text),
-                        isBestSeller: false,
-                        soldCount: 0,
-                      );
+                // 🔥 VALIDATE FORM
+                if (!_formKey.currentState!.validate()) return;
 
-                      if (book == null) {
-                        await AdminBookService.createBook(newBook);
+                Book newBook = Book(
+                  id: book?.id,
+                  title: title.text,
+                  author: author.text,
+                  description: description.text,
+                  price: double.parse(price.text),
+                  imageUrl: image.text,
+                  stock: int.parse(stock.text),
+                  categoryId: selectedCategoryId!,
+                  isBestSeller: false,
+                  soldCount: 0,
+                );
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Book created successfully"),
-                          ),
-                        );
-                      } else {
-                        await AdminBookService.updateBook(newBook);
+                try {
+                  if (book == null) {
+                    await AdminBookService.createBook(newBook);
+                  } else {
+                    await AdminBookService.updateBook(newBook);
+                  }
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Book updated successfully"),
-                          ),
-                        );
-                      }
+                  Navigator.pop(context);
+                  await loadBooks();
 
-                      Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(book == null
+                          ? "Thêm thành công"
+                          : "Cập nhật thành công"),
+                    ),
+                  );
 
-                      await loadBooks();
-
-                      setState(() {
-                        saving = false;
-                      });
-                    },
-
-              child: saving
-                  ? const CircularProgressIndicator()
-                  : const Text("Save"),
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Lỗi: $e")),
+                  );
+                }
+              },
+              child: Text("Save"),
             ),
           ],
         );
       },
     );
-  }
+  },
+);
+}
 
   @override
   Widget build(BuildContext context) {

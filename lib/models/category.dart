@@ -18,8 +18,16 @@ class Category {
     );
   }
 
-  Map<String,dynamic> toJson(){
+  Map<String,dynamic> toCreateJson(){
     return{
+      "name":name,
+      "description":description
+    };
+  }
+
+  Map<String,dynamic> toUpdateJson(){
+    return{
+      "id": id,
       "name":name,
       "description":description
     };

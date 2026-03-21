@@ -23,7 +23,6 @@ class AdminBookService {
   }
 
   static Future<void> createBook(Book book) async {
-
   final body = {
     "title": book.title,
     "author": book.author,
@@ -36,19 +35,19 @@ class AdminBookService {
     "categoryId": book.categoryId
   };
 
+  print("SEND: ${jsonEncode(body)}"); // 🔥
+
   final response = await http.post(
     Uri.parse(baseUrl),
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: {"Content-Type": "application/json"},
     body: jsonEncode(body),
   );
 
-  print("STATUS: ${response.statusCode}");
-  print("BODY: ${response.body}");
+  print("STATUS: ${response.statusCode}"); // 🔥
+  print("BODY: ${response.body}");         // 🔥
 
   if (response.statusCode != 200 && response.statusCode != 201) {
-    throw Exception("Create book failed");
+    throw Exception("Create book failed: ${response.body}");
   }
 }
 

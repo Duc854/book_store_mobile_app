@@ -1,33 +1,26 @@
+import 'package:book_store_mobile_app/services/admin_category_service.dart';
 import 'package:flutter/material.dart';
 import '../models/category.dart';
-import '../services/admin_category_service.dart';
 
-class AdminCategoryScreen extends StatefulWidget {
-  const AdminCategoryScreen({super.key});
+class AdminCategoriesScreen extends StatefulWidget {
+  const AdminCategoriesScreen({super.key});
 
   @override
-  State<AdminCategoryScreen> createState() => _AdminCategoryScreenState();
+  State<AdminCategoriesScreen> createState() => _AdminCategoriesScreenState();
 }
 
-class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
+class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
+
   List<Category> categories = [];
-  List<Category> filtered = [];
+  List<Category> filteredCategories = [];
+
+  bool loading = true;
 
   String search = "";
+  bool sortAsc = true;
 
-  void loadCategories() async {
-    categories = await AdminCategoryService.getCategories();
-
-    applyFilter();
-
-    setState(() {});
-  }
-
-  void applyFilter() {
-    filtered = categories.where((c) {
-      return c.name.toLowerCase().contains(search.toLowerCase());
-    }).toList();
-  }
+  int currentPage = 1;
+  int pageSize = 5;
 
   @override
   void initState() {
@@ -35,11 +28,60 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
     loadCategories();
   }
 
+  Future<void> loadCategories() async {
+    categories = await AdminCategoryService.getCategories();
+    applyFilter();
+
+    setState(() {
+      loading = false;
+    });
+  }
+
+  // ================= FILTER =================
+  void applyFilter() {
+    filteredCategories = categories.where((c) {
+      return c.name.toLowerCase().contains(search.toLowerCase());
+    }).toList();
+
+    filteredCategories.sort((a, b) =>
+        sortAsc ? a.name.compareTo(b.name) : b.name.compareTo(a.name));
+
+    currentPage = 1;
+  }
+
+  // ================= PAGINATION =================
+  List<Category> get paginatedCategories {
+    int start = (currentPage - 1) * pageSize;
+    int end = start + pageSize;
+
+    if (end > filteredCategories.length) {
+      end = filteredCategories.length;
+    }
+
+    return filteredCategories.sublist(start, end);
+  }
+
+  void nextPage() {
+    if (currentPage * pageSize < filteredCategories.length) {
+      setState(() => currentPage++);
+    }
+  }
+
+  void prevPage() {
+    if (currentPage > 1) {
+      setState(() => currentPage--);
+    }
+  }
+
+  Future<void> deleteCategory(int id) async {
+    await AdminCategoryService.deleteCategory(id);
+    await loadCategories();
+  }
+
+  // ================= DIALOG =================
   void showCategoryDialog({Category? category}) {
-    TextEditingController name = TextEditingController(text: category?.name);
-    TextEditingController description = TextEditingController(
-      text: category?.description,
-    );
+    final name = TextEditingController(text: category?.name);
+    final description = TextEditingController(text: category?.description);
 
     showDialog(
       context: context,
@@ -54,7 +96,6 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
                 controller: name,
                 decoration: const InputDecoration(labelText: "Name"),
               ),
-
               TextField(
                 controller: description,
                 decoration: const InputDecoration(labelText: "Description"),
@@ -70,7 +111,15 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
 
             ElevatedButton(
               onPressed: () async {
-                Category c = Category(
+
+                if (name.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Name không được rỗng")),
+                  );
+                  return;
+                }
+
+                Category newCat = Category(
                   id: category?.id,
                   name: name.text,
                   description: description.text,
@@ -78,25 +127,28 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
 
                 try {
                   if (category == null) {
-                    await AdminCategoryService.createCategory(c);
+                    await AdminCategoryService.createCategory(newCat);
                   } else {
-                    await AdminCategoryService.updateCategory(c);
+                    await AdminCategoryService.updateCategory(newCat);
                   }
 
                   Navigator.pop(context);
-
-                  loadCategories();
+                  await loadCategories();
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Saved successfully")),
+                    SnackBar(
+                      content: Text(category == null
+                          ? "Thêm thành công"
+                          : "Cập nhật thành công"),
+                    ),
                   );
+
                 } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(e.toString())));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Lỗi: $e")),
+                  );
                 }
               },
-
               child: const Text("Save"),
             ),
           ],
@@ -105,42 +157,7 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
     );
   }
 
-  Future<void> deleteCategory(Category c) async {
-    bool confirm = await showDialog(
-      context: context,
-
-      builder: (_) {
-        return AlertDialog(
-          title: const Text("Confirm Delete"),
-
-          content: Text("Delete ${c.name}?"),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel"),
-            ),
-
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Delete"),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirm == true) {
-      await AdminCategoryService.deleteCategory(c.id!);
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Category deleted")));
-
-      loadCategories();
-    }
-  }
-
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,62 +168,95 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
         child: const Icon(Icons.add),
       ),
 
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
 
-            child: TextField(
-              decoration: const InputDecoration(
-                labelText: "Search Category",
-                prefixIcon: Icon(Icons.search),
-              ),
-
-              onChanged: (value) {
-                search = value;
-
-                applyFilter();
-
-                setState(() {});
-              },
-            ),
-          ),
-
-          Expanded(
-            child: ListView.builder(
-              itemCount: filtered.length,
-
-              itemBuilder: (context, index) {
-                final c = filtered[index];
-
-                return Card(
-                  child: ListTile(
-                    title: Text(c.name),
-
-                    subtitle: Text(c.description),
-
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => showCategoryDialog(category: c),
+                // ===== SEARCH + SORT =====
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: const InputDecoration(
+                          labelText: "Search category",
                         ),
+                        onChanged: (value) {
+                          search = value;
+                          applyFilter();
+                          setState(() {});
+                        },
+                      ),
 
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => deleteCategory(c),
-                        ),
-                      ],
-                    ),
+                      const SizedBox(height: 10),
+
+                      ElevatedButton(
+                        onPressed: () {
+                          sortAsc = !sortAsc;
+                          applyFilter();
+                          setState(() {});
+                        },
+                        child: Text(sortAsc ? "Name ↑" : "Name ↓"),
+                      ),
+                    ],
                   ),
-                );
-              },
+                ),
+
+                // ===== LIST =====
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: paginatedCategories.length,
+                    itemBuilder: (context, index) {
+                      final c = paginatedCategories[index];
+
+                      return Card(
+                        child: ListTile(
+                          title: Text(c.name),
+                          subtitle: Text(c.description),
+
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () =>
+                                    showCategoryDialog(category: c),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => deleteCategory(c.id!),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // ===== PAGINATION =====
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: prevPage,
+                        child: const Text("Prev"),
+                      ),
+                      const SizedBox(width: 20),
+                      Text("Page $currentPage"),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: nextPage,
+                        child: const Text("Next"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

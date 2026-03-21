@@ -16,18 +16,17 @@ class AdminCategoryService {
   }
 
   static Future<void> createCategory(Category c) async {
-
   final res = await http.post(
     Uri.parse(baseUrl),
     headers: {"Content-Type": "application/json"},
-    body: jsonEncode(c.toJson()),
+    body: jsonEncode(c.toCreateJson()),
   );
 
-  print(res.statusCode);
-  print(res.body);
+  print("STATUS: ${res.statusCode}");
+  print("BODY: ${res.body}");
 
   if (res.statusCode != 200 && res.statusCode != 201) {
-    throw Exception("Create category failed");
+    throw Exception("Create category failed: ${res.body}");
   }
 }
 
@@ -36,7 +35,7 @@ class AdminCategoryService {
   final res = await http.put(
     Uri.parse("$baseUrl/${c.id}"),
     headers: {"Content-Type": "application/json"},
-    body: jsonEncode(c.toJson()),
+    body: jsonEncode(c.toUpdateJson()),
   );
 
   print(res.statusCode);

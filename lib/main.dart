@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: "Book Store",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const AdminCategoryScreen(),
+      home: const AdminBooksScreen(),
     );
   }
 }

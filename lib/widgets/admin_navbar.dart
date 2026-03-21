@@ -17,7 +17,7 @@ class _AdminNavbarState extends State<AdminNavbar> {
   final screens=[
     const AdminDashboard(),
     const AdminBooksScreen(),
-    const AdminCategoryScreen(),
+    const AdminCategoriesScreen(),
   ];
 
   @override
