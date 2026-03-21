@@ -1,3 +1,4 @@
+import 'package:book_store_mobile_app/screens/admin_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:book_store_mobile_app/screens/admin_books_screen.dart';
 import 'package:book_store_mobile_app/screens/admin_category_screen.dart';
@@ -17,8 +18,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "Book Store",
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      home: const AdminBooksScreen(),
+      theme: AppTheme.lightTheme,
+      home: const AdminHomeScreen(),
     );
   }
 }
