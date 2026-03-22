@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class AdminHomeService {
+class AdminDashboardService {
   static const String baseUrl = "https://localhost:7128/api/admin";
 
   static Future<Map<String, dynamic>> getStats() async {

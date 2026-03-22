@@ -1,10 +1,9 @@
-import 'package:book_store_mobile_app/screens/admin_home_screen.dart';
+import 'package:book_store_mobile_app/widgets/admin_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:book_store_mobile_app/screens/admin_books_screen.dart';
 import 'package:book_store_mobile_app/screens/admin_category_screen.dart';
 
 import 'themes/app_theme.dart';
-import 'screens/admin_dashboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: "Book Store",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AdminHomeScreen(),
+      home: const AdminNavbar(),
     );
   }
 }

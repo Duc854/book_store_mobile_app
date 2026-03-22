@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/admin_books_screen.dart';
 import '../screens/admin_category_screen.dart';
-import '../screens/admin_dashboard.dart';
+import '../screens/admin_dashboard_screen.dart';
 
 class AdminNavbar extends StatefulWidget {
   const AdminNavbar({super.key});
@@ -15,7 +15,7 @@ class _AdminNavbarState extends State<AdminNavbar> {
   int index=0;
 
   final screens=[
-    const AdminDashboard(),
+    const AdminDashboardScreen(),
     const AdminBooksScreen(),
     const AdminCategoriesScreen(),
   ];

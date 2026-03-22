@@ -1,14 +1,14 @@
-import 'package:book_store_mobile_app/services/admin_home_service.dart';
+import 'package:book_store_mobile_app/services/admin_dashboard_service.dart';
 import 'package:flutter/material.dart';
 
-class AdminHomeScreen extends StatefulWidget {
-  const AdminHomeScreen({super.key});
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({super.key});
 
   @override
-  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminHomeScreenState extends State<AdminHomeScreen> {
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   bool loading = true;
 
   double revenue = 0;
@@ -25,7 +25,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> loadStats() async {
     try {
-      final data = await AdminHomeService.getStats();
+      final data = await AdminDashboardService.getStats();
 
       setState(() {
         revenue = (data["totalRevenue"] ?? 0).toDouble();
