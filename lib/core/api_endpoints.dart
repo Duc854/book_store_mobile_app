@@ -3,4 +3,15 @@ class ApiEndpoints {
 
   static const String login = '$baseUrl/auth/login';
   static const String register = '$baseUrl/auth/register';
+
+  // Books
+  static const String books = '$baseUrl/books';
+  static const String categories = '$baseUrl/books/categories';
+  static const String bestSellers = '$baseUrl/books/best-sellers';
+
+  // Cart
+  static const String cart = '$baseUrl/cart';
+  static const String addToCart = '$baseUrl/cart/add';
+  static const String updateCart = '$baseUrl/cart/update-quantity';
+  static const String checkout = '$baseUrl/cart/checkout';
 }
