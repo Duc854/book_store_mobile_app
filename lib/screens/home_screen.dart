@@ -1,7 +1,9 @@
-import 'package:book_store_mobile_app/core/routes.dart';
-import 'package:book_store_mobile_app/services/book_service.dart';
+import 'package:book_store_mobile_app/widgets/main_speed_dial.dart';
 import 'package:flutter/material.dart';
+import '../core/routes.dart';
 import '../models/book.dart';
+import '../services/book_service.dart';
+import '../services/cart_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,11 +17,24 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Book> _allBestSellers = [];
   int _currentPage = 1;
   static const int _itemsPerPage = 6;
+  final CartService _cartService = CartService();
 
   @override
   void initState() {
     super.initState();
     _loadBestSellers();
+  }
+
+  void _addToCart(Book book) async {
+    final success = await _cartService.addToCart(book.id, 1);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Đã thêm "${book.title}" vào giỏ' : 'Lỗi khi thêm vào giỏ'),
+        backgroundColor: success ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   Future<void> _loadBestSellers() async {
@@ -129,7 +144,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(color: Colors.grey)),
                               const SizedBox(height: 4),
-                              Text('Price: \$${book.price.toStringAsFixed(2)}'),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('${book.price.toStringAsFixed(0)} Đ', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.blue),
+                                    onPressed: () => _addToCart(book),
+                                    constraints: const BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -181,6 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+      floatingActionButton: MainSpeedDial(onRefresh: _loadBestSellers),
     );
   }
 }

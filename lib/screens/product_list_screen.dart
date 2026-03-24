@@ -1,7 +1,9 @@
+import 'package:book_store_mobile_app/widgets/main_speed_dial.dart';
 import 'package:flutter/material.dart';
 import '../core/routes.dart';
 import '../models/book.dart';
 import '../services/book_service.dart';
+import '../services/cart_service.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -16,11 +18,24 @@ class _ProductListScreenState extends State<ProductListScreen> {
   bool _isLoading = true;
   int _currentPage = 1;
   static const int _itemsPerPage = 6;
+  final CartService _cartService = CartService();
 
   @override
   void initState() {
     super.initState();
     _loadBooks();
+  }
+
+  void _addToCart(Book book) async {
+    final success = await _cartService.addToCart(book.id, 1);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Đã thêm "${book.title}" vào giỏ' : 'Lỗi khi thêm vào giỏ'),
+        backgroundColor: success ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   Future<void> _loadBooks([String query = '']) async {
@@ -149,11 +164,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(
-                                                '\$${book.price.toStringAsFixed(2)}',
+                                                '${book.price.toStringAsFixed(0)} Đ',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 12,
+                                                  color: Colors.red,
                                                 ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.add_shopping_cart, size: 18, color: Colors.blue),
+                                                onPressed: () => _addToCart(book),
+                                                constraints: const BoxConstraints(),
+                                                padding: EdgeInsets.zero,
                                               ),
                                               Row(
                                                 children: [
@@ -208,9 +230,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.refresh),
-        onPressed: () => _loadBooks(_searchController.text.trim()),
+      floatingActionButton: MainSpeedDial(
+        onRefresh: () => _loadBooks(_searchController.text.trim()),
       ),
     );
   }

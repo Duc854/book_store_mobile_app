@@ -1,6 +1,6 @@
+import 'package:book_store_mobile_app/widgets/main_speed_dial.dart';
 import 'package:flutter/material.dart';
 import '../models/cart_item.dart';
-import '../services/cart_service.dart';
 import '../services/cart_service.dart';
 import 'checkout_screen.dart';
 
@@ -154,6 +154,7 @@ class CartScreenState extends State<CartScreen> {
                     ),
                   ],
                 ),
+      floatingActionButton: MainSpeedDial(onRefresh: loadCart),
     );
   }
 }

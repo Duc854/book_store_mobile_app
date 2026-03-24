@@ -9,6 +9,8 @@ class AppRoutes {
   static const String home = '/home';
   static const String products = '/products';
   static const String productDetail = '/product';
+  static const String cart = '/cart';
+  static const String profile = '/profile';
   static const String admin = '/admin';
 
   static Map<String, WidgetBuilder> getRoutes() {
@@ -18,6 +20,8 @@ class AppRoutes {
       register: (context) => const SignupScreen(),
       home: (context) => const HomeScreen(),
       products: (context) => const ProductListScreen(),
+      cart: (context) => const CartScreen(),
+      profile: (context) => const ProfileScreen(),
       admin: (context) => const AdminNavbar(),
     };
   }
