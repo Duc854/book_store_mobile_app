@@ -6,6 +6,7 @@ class Book {
   final String description;
   final double price;
   final double rating;
+
   final bool isBestSeller;
   final int soldCount;
   final int stock;
@@ -38,6 +39,7 @@ class Book {
           ? (json['price'] as num).toDouble()
           : double.tryParse('${json['price']}') ?? 0.0,
 
+      // nếu BE chưa có rating thì để default 0
       rating: (json['rating'] is num)
           ? (json['rating'] as num).toDouble()
           : double.tryParse('${json['rating']}') ?? 0.0,
