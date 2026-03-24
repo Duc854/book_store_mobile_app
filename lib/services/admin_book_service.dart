@@ -1,14 +1,21 @@
 import 'dart:convert';
+import 'package:book_store_mobile_app/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import '../models/book.dart';
 
 class AdminBookService {
 
   static const String baseUrl = "https://localhost:7128/api/admin/books";
-
+static Future<Map<String, String>> _getHeaders() async {
+  final token = await AuthService().getToken();
+  return {
+    "Content-Type": "application/json",
+    if (token.isNotEmpty) "Authorization": "Bearer $token",
+  };
+}
   static Future<List<Book>> getBooks() async {
-
-    final response = await http.get(Uri.parse(baseUrl));
+     final headers = await _getHeaders();
+    final response = await http.get(Uri.parse(baseUrl) , headers: headers);
 
     if (response.statusCode == 200) {
 
@@ -23,6 +30,7 @@ class AdminBookService {
   }
 
   static Future<void> createBook(Book book) async {
+    final headers = await _getHeaders();
   final body = {
     "title": book.title,
     "author": book.author,
@@ -39,7 +47,7 @@ class AdminBookService {
 
   final response = await http.post(
     Uri.parse(baseUrl),
-    headers: {"Content-Type": "application/json"},
+    headers: headers,
     body: jsonEncode(body),
   );
 
@@ -52,12 +60,10 @@ class AdminBookService {
 }
 
   static Future<void> updateBook(Book book) async {
-
+final headers = await _getHeaders();
     final response = await http.put(
       Uri.parse("$baseUrl/${book.id}"),
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: headers,
       body: jsonEncode(book.toJson()),
     );
 
