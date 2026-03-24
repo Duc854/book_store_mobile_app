@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:book_store_mobile_app/screens/admin_books_screen.dart';
 import 'package:book_store_mobile_app/screens/admin_category_screen.dart';
 
-import 'themes/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
