@@ -60,4 +60,18 @@ class Book {
           : int.tryParse('${json['categoryId']}') ?? 0,
     );
   }
+  Map<String,dynamic> toJson(){
+    return{
+      "id":id,
+      "title":title,
+      "author":author,
+      "description":description,
+      "price":price,
+      "imageUrl":imageUrl,
+      "isBestSeller":isBestSeller,
+      "soldCount":soldCount,
+      "stock":stock,
+      "categoryId":categoryId
+    };
+  }
 }

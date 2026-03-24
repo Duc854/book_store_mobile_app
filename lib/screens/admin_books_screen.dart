@@ -263,7 +263,7 @@ final _formKey = GlobalKey<FormState>();
                 if (!_formKey.currentState!.validate()) return;
 
                 Book newBook = Book(
-                  id: book?.id,
+                  id: book!.id,
                   title: title.text,
                   author: author.text,
                   description: description.text,
@@ -271,6 +271,7 @@ final _formKey = GlobalKey<FormState>();
                   imageUrl: image.text,
                   stock: int.parse(stock.text),
                   categoryId: selectedCategoryId!,
+                  rating : 0,
                   isBestSeller: false,
                   soldCount: 0,
                 );
