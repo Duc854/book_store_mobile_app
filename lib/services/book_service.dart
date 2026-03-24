@@ -26,7 +26,11 @@ class BookService {
             'https://images.unsplash.com/photo-1512820790803-83ca734da794',
         description: 'An introductory guide to Flutter UI development.',
         price: 12.99,
-        rating: 4.4,
+        rating: 1,
+        isBestSeller: false,
+        soldCount: 21,
+        stock: 12,
+        categoryId: 1,
       ),
       Book(
         id: 2,
@@ -36,7 +40,11 @@ class BookService {
             'https://images.unsplash.com/photo-1529070538774-1843cb3265df',
         description: 'Comprehensive Dart language manual.',
         price: 19.99,
-        rating: 4.8,
+        rating: 1,
+        isBestSeller: false,
+        soldCount: 1,
+        stock: 1,
+        categoryId: 1,
       ),
     ];
   }
