@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (loggedIn) {
         String? role = await _authService.getRole();
         if (role == "Admin") {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
+          Navigator.pushReplacementNamed(context, AppRoutes.admin);
         } else {
           Navigator.pushReplacementNamed(context, AppRoutes.home);
         }

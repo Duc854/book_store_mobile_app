@@ -1,3 +1,4 @@
+import 'package:book_store_mobile_app/widgets/admin_navbar.dart';
 import 'package:flutter/material.dart';
 import '../screens/screens.dart';
 
@@ -8,6 +9,7 @@ class AppRoutes {
   static const String home = '/home';
   static const String products = '/products';
   static const String productDetail = '/product';
+  static const String admin = '/admin';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -16,6 +18,7 @@ class AppRoutes {
       register: (context) => const SignupScreen(),
       home: (context) => const HomeScreen(),
       products: (context) => const ProductListScreen(),
+      admin: (context) => const AdminNavbar(),
     };
   }
 
