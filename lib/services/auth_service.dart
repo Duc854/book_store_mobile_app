@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api_endpoints.dart';
 
@@ -61,7 +62,25 @@ class AuthService {
   }
 
   Future<bool> isLoggedIn() async {
+    final token = await getToken();
+    if (token.isEmpty) return false;
+    return !JwtDecoder.isExpired(token);
+  }
+
+  Future<String> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('jwt_token');
+    return prefs.getString('jwt_token') ?? "";
+  }
+
+  Future<String?> getRole() async {
+    final token = await getToken();
+    if (token.isEmpty) return null;
+
+    try {
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      return decodedToken['role'] ?? decodedToken[''];
+    } catch (e) {
+      return null;
+    }
   }
 }
