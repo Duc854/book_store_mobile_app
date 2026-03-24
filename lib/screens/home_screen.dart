@@ -1,44 +1,48 @@
+import 'package:book_store_mobile_app/core/routes.dart';
+import 'package:book_store_mobile_app/services/book_service.dart';
 import 'package:flutter/material.dart';
 import '../models/book.dart';
-import '../services/book_service.dart';
-import '../services/cart_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final BookService _bookService = BookService();
-  final CartService _cartService = CartService();
-  List<Book> _books = [];
-  bool _isLoading = true;
+  late Future<List<Book>> _bestSellersFuture;
+  List<Book> _allBestSellers = [];
+  int _currentPage = 1;
+  static const int _itemsPerPage = 6;
 
   @override
   void initState() {
     super.initState();
-    _loadBooks();
+    _loadBestSellers();
   }
 
-  Future<void> _loadBooks() async {
-    final books = await _bookService.getAllBooks();
+  Future<void> _loadBestSellers() async {
+    _bestSellersFuture = BookService.fetchBestSellers();
+    final books = await _bestSellersFuture;
+    if (!mounted) return;
     setState(() {
-      _books = books;
-      _isLoading = false;
+      _allBestSellers = books;
     });
   }
 
-  Future<void> _addToCart(Book book) async {
-    final success = await _cartService.addToCart(book.id, 1);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'Đã thêm "${book.title}" vào giỏ hàng' : 'Lỗi khi thêm vào giỏ hàng'),
-        duration: const Duration(seconds: 2),
-      ),
+  List<Book> _getPaginatedBooks() {
+    final startIndex = (_currentPage - 1) * _itemsPerPage;
+    final endIndex = startIndex + _itemsPerPage;
+    if (startIndex >= _allBestSellers.length) return [];
+    return _allBestSellers.sublist(
+      startIndex,
+      endIndex > _allBestSellers.length ? _allBestSellers.length : endIndex,
     );
+  }
+
+  int _getTotalPages() {
+    return (_allBestSellers.length / _itemsPerPage).ceil();
   }
 
   @override
@@ -48,90 +52,135 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Book Store'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadBooks,
-          ),
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.products);
+            },
+          )
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _books.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.library_books, size: 80, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      const Text('Hiện không có cuốn sách nào.'),
-                      const Text('Có thể cơ sở dữ liệu đang trống hoặc lỗi kết nối.'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadBooks,
-                        child: const Text('Thử lại / Tải lại'),
-                      ),
-                    ],
-                  ),
-                )
-              : GridView.builder(
-              padding: const EdgeInsets.all(10),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.7,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: _books.length,
-              itemBuilder: (context, index) {
-                final book = _books[index];
-                return Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: book.imageUrl.isNotEmpty
-                            ? Image.network(
-                                book.imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Center(child: Icon(Icons.book, size: 50)),
-                              )
-                            : const Center(child: Icon(Icons.book, size: 50)),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              book.title,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              book.author,
-                              style: const TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                            const SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('${book.price} Đ', style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                                IconButton(
-                                  icon: const Icon(Icons.add_shopping_cart, color: Colors.green),
-                                  onPressed: () => _addToCart(book),
-                                ),
-                              ],
-                            ),
-                          ],
+      body: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Best Sellers',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: FutureBuilder<List<Book>>(
+                future: _bestSellersFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError || snapshot.data == null) {
+                    return const Center(child: Text('Unable to load best sellers'));
+                  }
+                  final books = _getPaginatedBooks();
+                  if (books.isEmpty) {
+                    return const Center(child: Text('No best sellers available'));
+                  }
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      final book = books[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.productDetail,
+                            arguments: book.id,
+                          );
+                        },
+                        child: Container(
+                          width: 170,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: book.imageUrl.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(book.imageUrl,
+                                            width: double.infinity,
+                                            fit: BoxFit.cover),
+                                      )
+                                    : Container(
+                                        color: Colors.grey.shade200,
+                                        child: const Center(
+                                            child: Icon(Icons.book,
+                                                size: 50, color: Colors.grey)),
+                                      ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(book.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style:
+                                      const TextStyle(fontWeight: FontWeight.bold)),
+                              Text(book.author,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.grey)),
+                              const SizedBox(height: 4),
+                              Text('Price: \$${book.price.toStringAsFixed(2)}'),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                      );
+                    },
+                    separatorBuilder: (context, index) => const SizedBox(width: 12),
+                    itemCount: books.length,
+                  );
+                },
+              ),
             ),
+            if (_allBestSellers.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _currentPage > 1
+                          ? () => setState(() => _currentPage--)
+                          : null,
+                      child: const Text('← Previous'),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Page $_currentPage / ${_getTotalPages()}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _currentPage < _getTotalPages()
+                          ? () => setState(() => _currentPage++)
+                          : null,
+                      child: const Text('Next →'),
+                    ),
+                  ],
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.list),
+                label: const Text('View all products'),
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.products);
+                },
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 }

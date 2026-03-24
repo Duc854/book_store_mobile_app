@@ -14,4 +14,9 @@ class ApiEndpoints {
   static const String addToCart = '$baseUrl/cart/add';
   static const String updateCart = '$baseUrl/cart/update-quantity';
   static const String checkout = '$baseUrl/cart/checkout';
+
+  // Admin
+  static const String adminCategory = '$baseUrl/Categories';
+  static const String adminBook = '$baseUrl/admin/books';
+  static const String adminDashboard = '$baseUrl/admin';
 }

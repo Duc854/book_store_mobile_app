@@ -12,21 +12,18 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
-  final _usernameController =
-      TextEditingController(); // Đổi từ Email sang Username
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
 
   bool _isLoading = false;
   final AuthService _authService = AuthService();
 
-  // Hàm xử lý đăng ký
   void _signup() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    // Gọi hàm register đã sửa trong AuthService
     final result = await _authService.register(
       _usernameController.text.trim(),
       _passwordController.text,
