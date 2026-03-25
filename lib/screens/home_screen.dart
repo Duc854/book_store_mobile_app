@@ -213,12 +213,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.list),
                 label: const Text('View all products'),
                 onPressed: () {
                   Navigator.pushNamed(context, AppRoutes.products);
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.shopping_bag),
+                label: const Text('My Orders'),
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.myOrders);
                 },
               ),
             ),

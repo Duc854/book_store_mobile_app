@@ -46,6 +46,21 @@ class BookService {
     ];
   }
 
+  static Future<List<Book>> getAllBooks() async {
+    try {
+      final res = await http.get(Uri.parse('${ApiEndpoints.baseUrl}/Books'));
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        if (json is List) {
+          return json.map((e) => Book.fromJson(e)).toList();
+        }
+      }
+    } catch (_) {}
+
+    // fallback mock if API không hoạt động
+    return await fetchBestSellers();
+  }
+
   static Future<List<Book>> searchBooks(String q) async {
     try {
       final uri = Uri.parse(ApiEndpoints.books).replace(
@@ -87,26 +102,5 @@ class BookService {
     // fallback
     final list = await fetchBestSellers();
     return list.firstWhere((book) => book.id == id, orElse: () => list.first);
-  }
-
-  // Giữ lại để tương thích nếu cần
-  static Future<List<Book>> getAllBooks({String? search, int? categoryId}) async {
-    try {
-      String url = ApiEndpoints.books;
-      if (search != null || categoryId != null) {
-        url += '?';
-        if (search != null) url += 'search=$search&';
-        if (categoryId != null) url += 'categoryId=$categoryId';
-      }
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Book.fromJson(json)).toList();
-      }
-      return [];
-    } catch (e) {
-      print('DEBUG: Lỗi getAllBooks: $e');
-      return [];
-    }
   }
 }

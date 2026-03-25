@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../core/routes.dart';
 
-class MainSpeedDial extends StatelessWidget {
+class MainSpeedDial extends StatefulWidget {
   final VoidCallback? onRefresh;
 
   const MainSpeedDial({super.key, this.onRefresh});
+
+  @override
+  State<MainSpeedDial> createState() => _MainSpeedDialState();
+}
+
+class _MainSpeedDialState extends State<MainSpeedDial> {
+  bool _isOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -14,29 +21,32 @@ class MainSpeedDial extends StatelessWidget {
     return SpeedDial(
       icon: Icons.menu,
       activeIcon: Icons.close,
-      backgroundColor: colorScheme.primary,
-      foregroundColor: Colors.white,
+      // Hiệu ứng làm mờ khi chưa bấm (khi _isOpen là false)
+      backgroundColor: colorScheme.primary.withAlpha(_isOpen ? 255 : 180),
+      foregroundColor: Colors.white.withAlpha(_isOpen ? 255 : 180),
       buttonSize: const Size(56.0, 56.0),
       visible: true,
       closeManually: false,
       curve: Curves.bounceIn,
       overlayColor: Colors.black,
       overlayOpacity: 0.5,
+      onOpen: () => setState(() => _isOpen = true),
+      onClose: () => setState(() => _isOpen = false),
       children: [
-        if (onRefresh != null)
+        if (widget.onRefresh != null)
           SpeedDialChild(
             child: const Icon(Icons.refresh),
             backgroundColor: Colors.grey,
             label: 'Làm mới',
-            onTap: onRefresh,
+            onTap: widget.onRefresh,
           ),
         SpeedDialChild(
           child: const Icon(Icons.local_shipping),
           backgroundColor: Colors.teal,
-          label: 'Theo dõi',
+          label: 'Đơn hàng của tôi',
           onTap: () {
-            if (ModalRoute.of(context)?.settings.name != AppRoutes.trackingOrder) {
-              Navigator.pushNamed(context, AppRoutes.trackingOrder);
+            if (ModalRoute.of(context)?.settings.name != AppRoutes.myOrders) {
+              Navigator.pushNamed(context, AppRoutes.myOrders);
             }
           },
         ),

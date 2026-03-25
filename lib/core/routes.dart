@@ -13,7 +13,8 @@ class AppRoutes {
   static const String cart = '/cart';
   static const String profile = '/profile';
   static const String admin = '/admin';
-  static const String trackingOrder = '/tracking-order';
+  static const String myOrders = '/my-orders';
+  static const String myOrderDetail = '/my-order-detail';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -25,7 +26,7 @@ class AppRoutes {
       cart: (context) => const CartScreen(),
       profile: (context) => const ProfileScreen(),
       admin: (context) => const AdminNavbar(),
-      trackingOrder: (context) => const CloneTrackingOrderScreen(),
+      myOrders: (context) => const MyOrderScreen(),
     };
   }
 
@@ -35,6 +36,14 @@ class AppRoutes {
       if (bookId != null) {
         return MaterialPageRoute(
           builder: (context) => ProductDetailScreen(bookId: bookId),
+          settings: settings,
+        );
+      }
+    } else if (settings.name == myOrderDetail) {
+      final orderId = settings.arguments as int?;
+      if (orderId != null) {
+        return MaterialPageRoute(
+          builder: (context) => MyOrderDetailScreen(orderId: orderId),
           settings: settings,
         );
       }
