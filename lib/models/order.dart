@@ -5,6 +5,7 @@ class OrderItem {
   final int quantity;
   final double unitPrice;
   final String? bookTitle;
+  final String? bookImageUrl;
 
   OrderItem({
     required this.id,
@@ -13,6 +14,7 @@ class OrderItem {
     required this.quantity,
     required this.unitPrice,
     this.bookTitle,
+    this.bookImageUrl,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,9 @@ class OrderItem {
       unitPrice: (json['unitPrice'] is num) ? (json['unitPrice'] as num).toDouble() : double.tryParse('${json['unitPrice']}') ?? 0,
       bookTitle: json['book'] != null && json['book'] is Map<String, dynamic>
           ? json['book']['title']?.toString()
+          : null,
+      bookImageUrl: json['book'] != null && json['book'] is Map<String, dynamic>
+          ? json['book']['imageUrl']?.toString()
           : null,
     );
   }

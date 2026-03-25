@@ -20,6 +20,46 @@ class _MyOrderDetailScreenState extends State<MyOrderDetailScreen> {
     _orderFuture = OrderService.getOrderById(widget.orderId);
   }
 
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.lightGreen;
+      case 'shipping':
+        return Colors.cyan;
+      case 'success':
+        return Colors.blue;
+      case 'cancelled':
+      case 'canceled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget _buildStatusChip(String label, String currentStatus) {
+    final isActive = currentStatus.toLowerCase() == label.toLowerCase();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isActive ? _statusColor(label).withOpacity(0.20) : Colors.grey[200],
+        border: Border.all(
+          color: isActive ? _statusColor(label) : Colors.grey.shade400,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label[0].toUpperCase() + label.substring(1),
+        style: TextStyle(
+          color: isActive ? _statusColor(label) : Colors.grey.shade600,
+          fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,6 +75,7 @@ class _MyOrderDetailScreenState extends State<MyOrderDetailScreen> {
           }
 
           final order = snapshot.data!;
+          final currentStatus = order.status;
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -44,8 +85,24 @@ class _MyOrderDetailScreenState extends State<MyOrderDetailScreen> {
                   'Order #${order.id}',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildStatusChip('pending', currentStatus),
+                    _buildStatusChip('confirmed', currentStatus),
+                    _buildStatusChip('shipping', currentStatus),
+                    _buildStatusChip('success', currentStatus),
+                    _buildStatusChip('cancelled', currentStatus),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Current status: ${currentStatus[0].toUpperCase()}${currentStatus.substring(1)}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
                 const SizedBox(height: 8),
-                Text('Status: ${order.status}'),
                 Text('Total: \$${order.totalAmount.toStringAsFixed(2)}'),
                 Text('Created at: ${order.orderDate.toLocal()}'),
                 const SizedBox(height: 16),
