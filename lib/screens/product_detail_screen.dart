@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/book_service.dart';
+import '../services/cart_service.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final int bookId;
@@ -12,11 +13,27 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late Future<Book?> _bookFuture;
+  final CartService _cartService = CartService();
+  bool _isAdding = false;
 
   @override
   void initState() {
     super.initState();
     _bookFuture = BookService.getBookById(widget.bookId);
+  }
+
+  void _addToCart(Book book) async {
+    setState(() => _isAdding = true);
+    final success = await _cartService.addToCart(book.id, 1);
+    if (!mounted) return;
+    setState(() => _isAdding = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Added "${book.title}" into cart' : 'Error when add to cart'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   @override
@@ -48,7 +65,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const Icon(Icons.book, size: 120),
                 const SizedBox(height: 16),
                 Text(book.title,
-                    style: Theme.of(context).textTheme.headlineSmall),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text('Author: ${book.author}',
                     style: Theme.of(context).textTheme.bodyLarge),
@@ -66,13 +83,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: 8),
                 Text(book.description),
                 const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Added to cart (not implemented yet)')));
-                  },
-                  icon: const Icon(Icons.shopping_cart),
-                  label: const Text('Add to Cart'),
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: _isAdding ? null : () => _addToCart(book),
+                    icon: _isAdding 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.shopping_cart),
+                    label: Text(_isAdding ? 'Adding...' : 'Add to Cart'),
+                  ),
                 ),
               ],
             ),

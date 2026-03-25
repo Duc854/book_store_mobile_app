@@ -1,6 +1,7 @@
 import 'package:book_store_mobile_app/core/routes.dart';
 import 'package:book_store_mobile_app/models/user.dart';
 import 'package:book_store_mobile_app/theme/app_theme.dart';
+import 'package:book_store_mobile_app/widgets/main_speed_dial.dart';
 import 'package:flutter/material.dart';
 import '../services/profile_service.dart';
 import '../services/auth_service.dart';
@@ -160,16 +161,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy theme hiện tại để dùng nhanh
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    if (_isLoading)
+    if (_isLoading) {
       return Scaffold(
         body: Center(
           child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -186,7 +187,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // --- AVATAR SECTION ---
             Center(
               child: Stack(
                 children: [
@@ -389,6 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+      floatingActionButton: const MainSpeedDial(),
     );
   }
 
@@ -399,8 +400,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    if (picked != null)
+    if (picked != null) {
       setState(() => _birthDateController.text = _formatDate(picked));
+    }
   }
 
   Widget _buildField(

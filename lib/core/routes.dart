@@ -10,8 +10,9 @@ class AppRoutes {
   static const String home = '/home';
   static const String products = '/products';
   static const String productDetail = '/product';
-  static const String admin = '/admin';
+  static const String cart = '/cart';
   static const String profile = '/profile';
+  static const String admin = '/admin';
   static const String myOrders = '/my-orders';
   static const String myOrderDetail = '/my-order-detail';
 
@@ -22,8 +23,9 @@ class AppRoutes {
       register: (context) => const SignupScreen(),
       home: (context) => const HomeScreen(),
       products: (context) => const ProductListScreen(),
-      admin: (context) => const AdminNavbar(),
+      cart: (context) => const CartScreen(),
       profile: (context) => const ProfileScreen(),
+      admin: (context) => const AdminNavbar(),
       myOrders: (context) => const MyOrderScreen(),
     };
   }
@@ -37,9 +39,7 @@ class AppRoutes {
           settings: settings,
         );
       }
-    }
-
-    if (settings.name == myOrderDetail) {
+    } else if (settings.name == myOrderDetail) {
       final orderId = settings.arguments as int?;
       if (orderId != null) {
         return MaterialPageRoute(
@@ -48,7 +48,6 @@ class AppRoutes {
         );
       }
     }
-
     return null;
   }
 }
