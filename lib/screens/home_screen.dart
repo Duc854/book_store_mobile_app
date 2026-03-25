@@ -30,7 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Added "${book.title}" into cart' : 'Error when add to cart'),
+        content: Text(
+          success
+              ? 'Added "${book.title}" into cart'
+              : 'Error when add to cart',
+        ),
         backgroundColor: success ? Colors.green : Colors.red,
         duration: const Duration(seconds: 1),
       ),
@@ -162,11 +166,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 4),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('${book.price.toStringAsFixed(0)} Đ', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    '${book.price.toStringAsFixed(0)} Đ',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   IconButton(
-                                    icon: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.blue),
+                                    icon: const Icon(
+                                      Icons.add_shopping_cart,
+                                      size: 20,
+                                      color: Colors.blue,
+                                    ),
                                     onPressed: () => _addToCart(book),
                                     constraints: const BoxConstraints(),
                                     padding: EdgeInsets.zero,
@@ -212,26 +227,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.list),
-                label: const Text('View all products'),
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.products);
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.shopping_bag),
-                label: const Text('My Orders'),
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.myOrders);
-                },
-              ),
-            ),
           ],
         ),
       ),

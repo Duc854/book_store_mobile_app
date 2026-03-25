@@ -1,3 +1,4 @@
+import 'package:book_store_mobile_app/widgets/main_speed_dial.dart';
 import 'package:flutter/material.dart';
 import '../models/order.dart';
 import '../services/order_service.dart';
@@ -39,13 +40,19 @@ class _MyOrderDetailScreenState extends State<MyOrderDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Order #${order.id}', style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Order #${order.id}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 Text('Status: ${order.status}'),
                 Text('Total: \$${order.totalAmount.toStringAsFixed(2)}'),
                 Text('Created at: ${order.orderDate.toLocal()}'),
                 const SizedBox(height: 16),
-                const Text('Items', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Items',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 Expanded(
                   child: ListView.builder(
                     itemCount: order.orderItems.length,
@@ -53,8 +60,12 @@ class _MyOrderDetailScreenState extends State<MyOrderDetailScreen> {
                       final item = order.orderItems[index];
                       return ListTile(
                         title: Text(item.bookTitle ?? 'Book #${item.bookId}'),
-                        subtitle: Text('Qty: ${item.quantity}  •  \$${item.unitPrice.toStringAsFixed(2)}'),
-                        trailing: Text('\$${(item.unitPrice * item.quantity).toStringAsFixed(2)}'),
+                        subtitle: Text(
+                          'Qty: ${item.quantity}  •  \$${item.unitPrice.toStringAsFixed(2)}',
+                        ),
+                        trailing: Text(
+                          '\$${(item.unitPrice * item.quantity).toStringAsFixed(2)}',
+                        ),
                       );
                     },
                   ),
@@ -64,6 +75,7 @@ class _MyOrderDetailScreenState extends State<MyOrderDetailScreen> {
           );
         },
       ),
+      floatingActionButton: MainSpeedDial(),
     );
   }
 }

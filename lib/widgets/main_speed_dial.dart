@@ -37,13 +37,13 @@ class _MainSpeedDialState extends State<MainSpeedDial> {
           SpeedDialChild(
             child: const Icon(Icons.refresh),
             backgroundColor: Colors.grey,
-            label: 'Làm mới',
+            label: 'Refresh',
             onTap: widget.onRefresh,
           ),
         SpeedDialChild(
           child: const Icon(Icons.local_shipping),
           backgroundColor: Colors.teal,
-          label: 'Đơn hàng của tôi',
+          label: 'My Order',
           onTap: () {
             if (ModalRoute.of(context)?.settings.name != AppRoutes.myOrders) {
               Navigator.pushNamed(context, AppRoutes.myOrders);
@@ -53,7 +53,7 @@ class _MainSpeedDialState extends State<MainSpeedDial> {
         SpeedDialChild(
           child: const Icon(Icons.person),
           backgroundColor: Colors.blue,
-          label: 'Tài khoản',
+          label: 'My profile',
           onTap: () {
             if (ModalRoute.of(context)?.settings.name != AppRoutes.profile) {
               Navigator.pushNamed(context, AppRoutes.profile);
@@ -63,7 +63,7 @@ class _MainSpeedDialState extends State<MainSpeedDial> {
         SpeedDialChild(
           child: const Icon(Icons.shopping_cart),
           backgroundColor: Colors.orange,
-          label: 'Giỏ hàng',
+          label: 'My cart',
           onTap: () {
             if (ModalRoute.of(context)?.settings.name != AppRoutes.cart) {
               Navigator.pushNamed(context, AppRoutes.cart);
@@ -73,7 +73,7 @@ class _MainSpeedDialState extends State<MainSpeedDial> {
         SpeedDialChild(
           child: const Icon(Icons.search),
           backgroundColor: Colors.green,
-          label: 'Sản phẩm',
+          label: 'Book list',
           onTap: () {
             if (ModalRoute.of(context)?.settings.name != AppRoutes.products) {
               Navigator.pushNamed(context, AppRoutes.products);
@@ -83,7 +83,7 @@ class _MainSpeedDialState extends State<MainSpeedDial> {
         SpeedDialChild(
           child: const Icon(Icons.home),
           backgroundColor: Colors.purple,
-          label: 'Trang chủ',
+          label: 'Home',
           onTap: () {
             if (ModalRoute.of(context)?.settings.name != AppRoutes.home) {
               Navigator.pushNamed(context, AppRoutes.home);

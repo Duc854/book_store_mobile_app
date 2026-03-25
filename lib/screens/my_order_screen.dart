@@ -1,3 +1,4 @@
+import 'package:book_store_mobile_app/widgets/main_speed_dial.dart';
 import 'package:flutter/material.dart';
 import '../core/routes.dart';
 import '../models/order.dart';
@@ -52,7 +53,9 @@ class _MyOrderScreenState extends State<MyOrderScreen> {
                     children: [
                       Text('Total: \$${order.totalAmount.toStringAsFixed(2)}'),
                       Text('Status: ${order.status}'),
-                      Text('Date: ${order.orderDate.toLocal().toString().split(' ')[0]}'),
+                      Text(
+                        'Date: ${order.orderDate.toLocal().toString().split(' ')[0]}',
+                      ),
                     ],
                   ),
                   trailing: const Icon(Icons.chevron_right),
@@ -69,6 +72,7 @@ class _MyOrderScreenState extends State<MyOrderScreen> {
           );
         },
       ),
+      floatingActionButton: MainSpeedDial(),
     );
   }
 }
