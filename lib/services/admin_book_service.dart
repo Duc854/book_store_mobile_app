@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/book.dart';
 
 class AdminBookService {
-  static const String baseUrl = "https://localhost:7128/api/Books";
+  static const String baseUrl = "https://localhost:7128/api/admin/books";
   static Future<Map<String, String>> _getHeaders() async {
     final token = await AuthService().getToken();
     return {
