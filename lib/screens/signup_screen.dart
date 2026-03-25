@@ -191,8 +191,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   obscureText: true,
                   validator: (value) {
-                    if (value == null || value.length < 6)
+                    if (value == null || value.length < 6) {
                       return "Minimum 6 characters";
+                    }
                     return null;
                   },
                 ),
@@ -209,8 +210,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   obscureText: true,
                   validator: (value) {
-                    if (value != _passwordController.text)
+                    if (value != _passwordController.text) {
                       return "Passwords do not match";
+                    }
                     return null;
                   },
                 ),

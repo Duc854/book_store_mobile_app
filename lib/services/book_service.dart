@@ -6,15 +6,14 @@ import '../models/book.dart';
 class BookService {
   static Future<List<Book>> fetchBestSellers() async {
     try {
-      final res =
-          await http.get(Uri.parse('${ApiEndpoints.baseUrl}/Books/best-sellers'));
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        if (data is List) {
-          return data.map((e) => Book.fromJson(e)).toList();
-        }
+      final response = await http.get(Uri.parse(ApiEndpoints.bestSellers));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Book.fromJson(json)).toList();
       }
-    } catch (_) {}
+    } catch (e) {
+      print('DEBUG: Lỗi fetchBestSellers: $e');
+    }
 
     // fallback mock if API không hoạt động
     return [
@@ -22,12 +21,11 @@ class BookService {
         id: 1,
         title: 'Flutter for Beginners',
         author: 'John Doe',
-        imageUrl:
-            'https://images.unsplash.com/photo-1512820790803-83ca734da794',
+        imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794',
         description: 'An introductory guide to Flutter UI development.',
         price: 12.99,
-        rating: 1,
-        isBestSeller: false,
+        rating: 4.5,
+        isBestSeller: true,
         soldCount: 21,
         stock: 12,
         categoryId: 1,
@@ -36,14 +34,13 @@ class BookService {
         id: 2,
         title: 'Dart in Action',
         author: 'Jane Smith',
-        imageUrl:
-            'https://images.unsplash.com/photo-1529070538774-1843cb3265df',
+        imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df',
         description: 'Comprehensive Dart language manual.',
         price: 19.99,
-        rating: 1,
-        isBestSeller: false,
-        soldCount: 1,
-        stock: 1,
+        rating: 4.8,
+        isBestSeller: true,
+        soldCount: 50,
+        stock: 5,
         categoryId: 1,
       ),
     ];
@@ -66,7 +63,7 @@ class BookService {
 
   static Future<List<Book>> searchBooks(String q) async {
     try {
-      final uri = Uri.parse('${ApiEndpoints.baseUrl}/Books').replace(
+      final uri = Uri.parse(ApiEndpoints.books).replace(
         queryParameters: q.isNotEmpty ? {'search': q} : null,
       );
       final res = await http.get(uri);
@@ -76,7 +73,9 @@ class BookService {
           return json.map((e) => Book.fromJson(e)).toList();
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      print('DEBUG: Lỗi searchBooks: $e');
+    }
 
     // fallback local filtered mock
     final all = await fetchBestSellers();
@@ -89,14 +88,16 @@ class BookService {
 
   static Future<Book?> getBookById(int id) async {
     try {
-      final res = await http.get(Uri.parse('${ApiEndpoints.baseUrl}/Books/$id'));
+      final res = await http.get(Uri.parse('${ApiEndpoints.books}/$id'));
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         if (json is Map<String, dynamic>) {
           return Book.fromJson(json);
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      print('DEBUG: Lỗi getBookById: $e');
+    }
 
     // fallback
     final list = await fetchBestSellers();
