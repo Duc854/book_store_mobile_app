@@ -12,6 +12,8 @@ class AppRoutes {
   static const String productDetail = '/product';
   static const String admin = '/admin';
   static const String profile = '/profile';
+  static const String myOrders = '/my-orders';
+  static const String myOrderDetail = '/my-order-detail';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -22,6 +24,7 @@ class AppRoutes {
       products: (context) => const ProductListScreen(),
       admin: (context) => const AdminNavbar(),
       profile: (context) => const ProfileScreen(),
+      myOrders: (context) => const MyOrderScreen(),
     };
   }
 
@@ -35,6 +38,17 @@ class AppRoutes {
         );
       }
     }
+
+    if (settings.name == myOrderDetail) {
+      final orderId = settings.arguments as int?;
+      if (orderId != null) {
+        return MaterialPageRoute(
+          builder: (context) => MyOrderDetailScreen(orderId: orderId),
+          settings: settings,
+        );
+      }
+    }
+
     return null;
   }
 }
