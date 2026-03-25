@@ -28,7 +28,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _isLoading = true;
       _currentPage = 1;
     });
-    final books = await BookService.searchBooks(query);
+    final books = query.isEmpty
+        ? await BookService.getAllBooks()
+        : await BookService.searchBooks(query);
     if (!mounted) return;
     setState(() {
       _allBooks = books;

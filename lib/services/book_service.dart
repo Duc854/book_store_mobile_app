@@ -49,6 +49,21 @@ class BookService {
     ];
   }
 
+  static Future<List<Book>> getAllBooks() async {
+    try {
+      final res = await http.get(Uri.parse('${ApiEndpoints.baseUrl}/Books'));
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        if (json is List) {
+          return json.map((e) => Book.fromJson(e)).toList();
+        }
+      }
+    } catch (_) {}
+
+    // fallback mock if API không hoạt động
+    return await fetchBestSellers();
+  }
+
   static Future<List<Book>> searchBooks(String q) async {
     try {
       final uri = Uri.parse('${ApiEndpoints.baseUrl}/Books').replace(
