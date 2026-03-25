@@ -1,4 +1,5 @@
 import 'package:book_store_mobile_app/services/admin_dashboard_service.dart';
+import 'package:book_store_mobile_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -54,7 +55,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Text(
                 value,
                 style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -66,30 +69,68 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin Dashboard")),
+      appBar: AppBar(
+        title: const Text("Admin Dashboard"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: "Logout",
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text("Confirm Logout"),
+                  content: const Text("Are you sure you want to logout?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("Logout"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                await AuthService().logout();
+                if (context.mounted) {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
+                }
+              }
+            },
+          ),
+        ],
+      ),
 
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-
                 Row(
                   children: [
                     buildCard(
-                        "Revenue",
-                        "\$${revenue.toStringAsFixed(0)}",
-                        Icons.attach_money,
-                        Colors.green),
+                      "Revenue",
+                      "\$${revenue.toStringAsFixed(0)}",
+                      Icons.attach_money,
+                      Colors.green,
+                    ),
                     buildCard(
-                        "Orders",
-                        orders.toString(),
-                        Icons.shopping_cart,
-                        Colors.blue),
+                      "Orders",
+                      orders.toString(),
+                      Icons.shopping_cart,
+                      Colors.blue,
+                    ),
                     buildCard(
-                        "Users",
-                        users.toString(),
-                        Icons.people,
-                        Colors.orange),
+                      "Users",
+                      users.toString(),
+                      Icons.people,
+                      Colors.orange,
+                    ),
                   ],
                 ),
 
@@ -99,8 +140,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   padding: EdgeInsets.all(10),
                   child: Text(
                     "Recent Orders",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
 

@@ -1,11 +1,18 @@
 import 'dart:convert';
+import 'package:book_store_mobile_app/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import '../models/category.dart';
 
 class AdminCategoryService {
 
   static const baseUrl = "https://localhost:7128/api/Categories";
-
+ static Future<Map<String, String>> _getHeaders() async {
+    final token = await AuthService().getToken();
+    return {
+      "Content-Type": "application/json",
+      if (token.isNotEmpty) "Authorization": "Bearer $token",
+    };
+  }
   static Future<List<Category>> getCategories() async {
 
     final res = await http.get(Uri.parse(baseUrl));
@@ -16,9 +23,10 @@ class AdminCategoryService {
   }
 
   static Future<void> createCategory(Category c) async {
+    final headers = await _getHeaders();
   final res = await http.post(
     Uri.parse(baseUrl),
-    headers: {"Content-Type": "application/json"},
+    headers: headers,
     body: jsonEncode(c.toCreateJson()),
   );
 
@@ -31,10 +39,10 @@ class AdminCategoryService {
 }
 
   static Future<void> updateCategory(Category c) async {
-
+final headers = await _getHeaders();
   final res = await http.put(
     Uri.parse("$baseUrl/${c.id}"),
-    headers: {"Content-Type": "application/json"},
+    headers: headers,
     body: jsonEncode(c.toUpdateJson()),
   );
 
@@ -47,7 +55,10 @@ class AdminCategoryService {
 }
 
   static Future<void> deleteCategory(int id) async {
-
-    await http.delete(Uri.parse("$baseUrl/$id"));
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse("$baseUrl/$id"),  headers: headers, );
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception("Delete book failed: ${response.body}");
+    }
   }
 }
