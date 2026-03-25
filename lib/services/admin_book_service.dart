@@ -40,7 +40,7 @@ class AdminBookService {
       "categoryId": book.categoryId,
     };
 
-    print("SEND: ${jsonEncode(body)}"); // 🔥
+    print("SEND: ${jsonEncode(body)}"); 
 
     final response = await http.post(
       Uri.parse(baseUrl),
@@ -48,8 +48,8 @@ class AdminBookService {
       body: jsonEncode(body),
     );
 
-    print("STATUS: ${response.statusCode}"); // 🔥
-    print("BODY: ${response.body}"); // 🔥
+    print("STATUS: ${response.statusCode}"); 
+    print("BODY: ${response.body}"); 
 
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception("Create book failed: ${response.body}");

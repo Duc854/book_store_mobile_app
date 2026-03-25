@@ -73,7 +73,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           : Column(
               children: [
 
-                // ===== STATS =====
                 Row(
                   children: [
                     buildCard(
@@ -96,7 +95,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 const SizedBox(height: 20),
 
-                // ===== RECENT ORDERS =====
                 const Padding(
                   padding: EdgeInsets.all(10),
                   child: Text(

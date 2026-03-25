@@ -15,9 +15,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   List<Book> books = [];
   List<Book> filteredBooks = [];
 
-  List<int> pageSizeOptions = [5, 10, 20];
-  int get totalPages => (filteredBooks.length / pageSize).ceil();
-
   List<String> authors = ["All"];
   String selectedAuthor = "All";
 
@@ -26,8 +23,11 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   String authorFilter = "";
   String titleSearch = "";
 
-  bool sortAsc = true;
+  bool sortPriceAsc = true;
+  bool sortIdAsc = true;
 
+  List<int> pageSizeOptions = [5, 10, 20];
+  int get totalPages => (filteredBooks.length / pageSize).ceil();
   int currentPage = 1;
   int pageSize = 5;
 
@@ -38,17 +38,17 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   }
 
   Future<void> loadBooks() async {
-  books = await AdminBookService.getBooks();
+    books = await AdminBookService.getBooks();
 
-  authors = ["All"];
-  authors.addAll(books.map((b) => b.author).toSet().toList());
+    authors = ["All"];
+    authors.addAll(books.map((b) => b.author).toSet().toList());
 
-  applyFilter();
+    applyFilter();
 
-  setState(() {
-    loading = false;
-  });
-}
+    setState(() {
+      loading = false;
+    });
+  }
 
   void applyFilter() {
     filteredBooks = books.where((b) {
@@ -62,12 +62,9 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
 
       return matchAuthor && matchTitle;
     }).toList();
-
     filteredBooks.sort(
-      (a, b) =>
-          sortAsc ? a.price.compareTo(b.price) : b.price.compareTo(a.price),
+      (a, b) => sortIdAsc ? a.id.compareTo(b.id) : b.id.compareTo(a.id),
     );
-
     currentPage = 1;
   }
 
@@ -129,110 +126,85 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      // ===== TITLE =====
                       TextFormField(
                         controller: title,
                         decoration: InputDecoration(labelText: "Title"),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "Title không được để trống";
+                            return "Title cannot be empty";
                           }
                           if (value.length < 3) {
-                            return "Title phải ≥ 3 ký tự";
+                            return "Title must be at least 3 characters";
                           }
                           return null;
                         },
                       ),
 
-                      // ===== AUTHOR =====
                       TextFormField(
                         controller: author,
                         decoration: InputDecoration(labelText: "Author"),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "Author không được để trống";
+                            return "Author cannot be empty";
                           }
                           return null;
                         },
                       ),
 
-                      // ===== DESCRIPTION =====
                       TextFormField(
                         controller: description,
                         decoration: InputDecoration(labelText: "Description"),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "Description không được để trống";
+                            return "Description cannot be empty";
                           }
                           return null;
                         },
                       ),
 
-                      // ===== PRICE =====
                       TextFormField(
                         controller: price,
                         decoration: InputDecoration(labelText: "Price"),
                         keyboardType: TextInputType.number,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Price không được để trống";
-                          }
+                          if (value == null || value.isEmpty)
+                            return "Price cannot be empty";
 
                           final p = double.tryParse(value);
-                          if (p == null) {
-                            return "Price phải là số";
-                          }
-
-                          if (p <= 0) {
-                            return "Price phải > 0";
-                          }
-
+                          if (p == null) return "Price must be a number";
+                          if (p <= 0) return "Price must be greater than 0";
                           return null;
                         },
                       ),
 
-                      // ===== STOCK =====
                       TextFormField(
                         controller: stock,
                         decoration: InputDecoration(labelText: "Stock"),
                         keyboardType: TextInputType.number,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Stock không được để trống";
-                          }
+                          if (value == null || value.isEmpty)
+                            return "Stock cannot be empty";
 
                           final s = int.tryParse(value);
-                          if (s == null) {
-                            return "Stock phải là số nguyên";
-                          }
-
-                          if (s < 0) {
-                            return "Stock không được âm";
-                          }
-
+                          if (s == null) return "Stock must be an integer";
+                          if (s < 0) return "Stock cannot be negative";
                           return null;
                         },
                       ),
 
-                      // ===== IMAGE URL =====
                       TextFormField(
                         controller: image,
                         decoration: InputDecoration(labelText: "Image URL"),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Image URL không được để trống";
-                          }
-
+                          if (value == null || value.isEmpty)
+                            return "Image URL cannot be empty";
                           final uri = Uri.tryParse(value);
-                          if (uri == null || !uri.isAbsolute) {
-                            return "URL không hợp lệ";
-                          }
-
+                          if (uri == null || !uri.isAbsolute)
+                            return "Invalid URL";
                           return null;
                         },
                       ),
 
-                      // ===== CATEGORY =====
                       DropdownButtonFormField<int>(
                         value: selectedCategoryId,
                         decoration: InputDecoration(labelText: "Category"),
@@ -248,9 +220,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                           });
                         },
                         validator: (value) {
-                          if (value == null) {
-                            return "Vui lòng chọn category";
-                          }
+                          if (value == null) return "Please select a category";
                           return null;
                         },
                       ),
@@ -267,7 +237,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
 
                 ElevatedButton(
                   onPressed: () async {
-                    // 🔥 VALIDATE FORM
                     if (!_formKey.currentState!.validate()) return;
 
                     Book newBook = Book(
@@ -298,15 +267,15 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                         SnackBar(
                           content: Text(
                             book == null
-                                ? "Thêm thành công"
-                                : "Cập nhật thành công",
+                                ? "Book added successfully"
+                                : "Book updated successfully",
                           ),
                         ),
                       );
                     } catch (e) {
                       ScaffoldMessenger.of(
                         context,
-                      ).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
+                      ).showSnackBar(SnackBar(content: Text("Error: $e")));
                     }
                   },
                   child: Text("Save"),
@@ -337,7 +306,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                   padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
-                      // ===== Chọn số sách hiển thị =====
                       Row(
                         children: [
                           const Text("Show: "),
@@ -359,7 +327,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                             },
                           ),
                           const SizedBox(width: 20),
-                          // ===== Filter Author =====
                           const Text("Author: "),
                           DropdownButton<String>(
                             value: selectedAuthor,
@@ -380,7 +347,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
 
                       const SizedBox(height: 10),
 
-                      // ===== Search Title =====
                       TextField(
                         decoration: const InputDecoration(
                           labelText: "Search by Title",
@@ -394,16 +360,35 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
 
                       const SizedBox(height: 10),
 
-                      // ===== Sort Price =====
                       Row(
                         children: [
                           ElevatedButton(
                             onPressed: () {
-                              sortAsc = !sortAsc;
-                              applyFilter();
-                              setState(() {});
+                              setState(() {
+                                sortPriceAsc = !sortPriceAsc;
+                                applyFilter();
+                              });
                             },
-                            child: Text(sortAsc ? "Price ↑" : "Price ↓"),
+                            child: Text(sortPriceAsc ? "Price ↑" : "Price ↓"),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                sortIdAsc = !sortIdAsc;
+
+                                filteredBooks.sort(
+                                  (a, b) => sortIdAsc
+                                      ? a.id!.compareTo(b.id!)
+                                      : b.id!.compareTo(a.id!),
+                                );
+
+                                currentPage = 1;
+                              });
+                            },
+                            child: Text(sortIdAsc ? "ID ↑" : "ID ↓"),
                           ),
                         ],
                       ),
@@ -426,8 +411,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                                 const Icon(Icons.book),
                           ),
 
-                          title: Text(book.title),
-
+                          title: Text("${book.id} - ${book.title}"),
                           subtitle: Text("${book.author} | \$${book.price}"),
 
                           trailing: Row(
@@ -494,7 +478,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Prev button
                       ElevatedButton(
                         onPressed: prevPage,
                         child: const Text("Prev"),
@@ -502,19 +485,16 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
 
                       const SizedBox(width: 20),
 
-                      // Page info
                       Text("Page $currentPage / $totalPages"),
 
                       const SizedBox(width: 20),
 
-                      // Next button
                       ElevatedButton(
                         onPressed: nextPage,
                         child: const Text("Next"),
                       ),
 
                       const SizedBox(width: 20),
-                     
                     ],
                   ),
                 ),

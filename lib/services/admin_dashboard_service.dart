@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 class AdminDashboardService {
   static const String baseUrl = "https://localhost:7128/api/admin";
 
-  // Lấy headers có JWT
   static Future<Map<String, String>> _getHeaders() async {
     final token = await AuthService().getToken();
     return {
@@ -14,13 +13,12 @@ class AdminDashboardService {
     };
   }
 
-  // Lấy thống kê
   static Future<Map<String, dynamic>> getStats() async {
     final headers = await _getHeaders();
 
     final res = await http.get(
       Uri.parse("$baseUrl/stats"),
-      headers: headers, // 🔥 thêm header
+      headers: headers,
     );
 
     if (res.statusCode == 200) {

@@ -10,7 +10,6 @@ class AdminCategoriesScreen extends StatefulWidget {
 }
 
 class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
-
   List<Category> categories = [];
   List<Category> filteredCategories = [];
 
@@ -18,7 +17,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
 
   String search = "";
   bool sortAsc = true;
-
+  bool sortIdAsc = true;
+  List<int> pageSizeOptions = [5, 10, 20];
+  int get totalPages => (filteredCategories.length / pageSize)
+      .ceil()
+      .clamp(1, double.infinity)
+      .toInt();
   int currentPage = 1;
   int pageSize = 5;
 
@@ -26,6 +30,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
   void initState() {
     super.initState();
     loadCategories();
+  }
+
+  Future<void> deleteBook(int id) async {
+    await AdminCategoryService.deleteCategory(id);
+
+    await loadCategories();
   }
 
   Future<void> loadCategories() async {
@@ -37,19 +47,16 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     });
   }
 
-  // ================= FILTER =================
   void applyFilter() {
     filteredCategories = categories.where((c) {
       return c.name.toLowerCase().contains(search.toLowerCase());
     }).toList();
 
-    filteredCategories.sort((a, b) =>
-        sortAsc ? a.name.compareTo(b.name) : b.name.compareTo(a.name));
+    filteredCategories.sort((a, b) => a.id!.compareTo(b.id!));
 
     currentPage = 1;
   }
 
-  // ================= PAGINATION =================
   List<Category> get paginatedCategories {
     int start = (currentPage - 1) * pageSize;
     int end = start + pageSize;
@@ -78,7 +85,6 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     await loadCategories();
   }
 
-  // ================= DIALOG =================
   void showCategoryDialog({Category? category}) {
     final name = TextEditingController(text: category?.name);
     final description = TextEditingController(text: category?.description);
@@ -111,10 +117,9 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
 
             ElevatedButton(
               onPressed: () async {
-
                 if (name.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Name không được rỗng")),
+                    const SnackBar(content: Text("Name cannot be empty")),
                   );
                   return;
                 }
@@ -137,16 +142,17 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(category == null
-                          ? "Thêm thành công"
-                          : "Cập nhật thành công"),
+                      content: Text(
+                        category == null
+                            ? "Category added successfully"
+                            : "Category updated successfully",
+                      ),
                     ),
                   );
-
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Lỗi: $e")),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Error: $e")));
                 }
               },
               child: const Text("Save"),
@@ -157,7 +163,6 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     );
   }
 
-  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -172,12 +177,62 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-
-                // ===== SEARCH + SORT =====
                 Padding(
                   padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
+                      Row(
+                        children: [
+                          const Text("Show: "),
+                          DropdownButton<int>(
+                            value: pageSize,
+                            items: pageSizeOptions.map((size) {
+                              return DropdownMenuItem(
+                                value: size,
+                                child: Text("$size per page"),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  pageSize = value;
+                                  currentPage = 1;
+                                });
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 10),
+
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                sortAsc = !sortAsc;
+                                applyFilter();
+                              });
+                            },
+                            child: Text(sortAsc ? "Name ↑" : "Name ↓"),
+                          ),
+                          const SizedBox(width: 10),
+
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                sortIdAsc = !sortIdAsc;
+                                filteredCategories.sort(
+                                  (a, b) => sortIdAsc
+                                      ? a.id!.compareTo(b.id!)
+                                      : b.id!.compareTo(a.id!),
+                                );
+                                currentPage = 1;
+                              });
+                            },
+                            child: Text(sortIdAsc ? "ID ↑" : "ID ↓"),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
                       TextField(
                         decoration: const InputDecoration(
                           labelText: "Search category",
@@ -188,22 +243,10 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                           setState(() {});
                         },
                       ),
-
-                      const SizedBox(height: 10),
-
-                      ElevatedButton(
-                        onPressed: () {
-                          sortAsc = !sortAsc;
-                          applyFilter();
-                          setState(() {});
-                        },
-                        child: Text(sortAsc ? "Name ↑" : "Name ↓"),
-                      ),
                     ],
                   ),
                 ),
 
-                // ===== LIST =====
                 Expanded(
                   child: ListView.builder(
                     itemCount: paginatedCategories.length,
@@ -212,7 +255,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
 
                       return Card(
                         child: ListTile(
-                          title: Text(c.name),
+                          title: Text("${c.id} - ${c.name}"),
                           subtitle: Text(c.description),
 
                           trailing: Row(
@@ -224,8 +267,44 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                                     showCategoryDialog(category: c),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => deleteCategory(c.id!),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: const Text("Confirm Delete"),
+                                      content: const Text(
+                                        "Are you sure you want to delete this category?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            Navigator.pop(context);
+                                            await deleteCategory(c.id!);
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Category deleted successfully",
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: const Text("Delete"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -235,7 +314,6 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                   ),
                 ),
 
-                // ===== PAGINATION =====
                 Padding(
                   padding: const EdgeInsets.all(10),
                   child: Row(
@@ -246,7 +324,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                         child: const Text("Prev"),
                       ),
                       const SizedBox(width: 20),
-                      Text("Page $currentPage"),
+                      Text("Page $currentPage / $totalPages"),
                       const SizedBox(width: 20),
                       ElevatedButton(
                         onPressed: nextPage,
