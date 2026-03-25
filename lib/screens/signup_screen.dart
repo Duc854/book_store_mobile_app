@@ -1,5 +1,6 @@
 import 'package:book_store_mobile_app/core/routes.dart';
 import 'package:book_store_mobile_app/services/auth_service.dart';
+import 'package:book_store_mobile_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -20,32 +21,97 @@ class _SignupScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
 
   void _signup() async {
+    // 1. Kiểm tra tính hợp lệ của Form
     if (!_formKey.currentState!.validate()) return;
 
+    // 2. Bắt đầu trạng thái Loading
     setState(() => _isLoading = true);
 
-    final result = await _authService.register(
-      _usernameController.text.trim(),
-      _passwordController.text,
-      _nameController.text.trim(),
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? "Signup successful!"),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      // 3. Gọi API đăng ký qua AuthService
+      final result = await _authService.register(
+        _usernameController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
       );
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
-    } else {
+
+      // 4. Kiểm tra xem Widget còn trên màn hình không
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (result['success']) {
+        // 5. HIỂN THỊ SUCCESS DIALOG THEO THEME CỦA APP
+        showDialog(
+          context: context,
+          barrierDismissible: false, // Bắt buộc tương tác với nút
+          builder: (context) => AlertDialog(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.accent, // Sử dụng Emerald Green từ AppColors
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  "Account Created!",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.displayLarge?.copyWith(fontSize: 20),
+                ),
+              ],
+            ),
+            content: Text(
+              "Your account has been successfully created. \n\n"
+              "Please log in and visit your profile to complete your personal information (Phone, Address, etc.).",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  // Nút này sẽ tự động ăn theo style của elevatedButtonTheme bạn đã định nghĩa
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Đóng Dialog
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.login,
+                    ); // Về Login
+                  },
+                  child: const Text("GO TO LOGIN"),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // 6. HIỂN THỊ LỖI NẾU ĐĂNG KÝ THẤT BẠI
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['message'] ?? "Registration failed. Please try again.",
+            ),
+            backgroundColor:
+                AppColors.error, // Sử dụng Alizarin Red từ AppColors
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } catch (e) {
+      // 7. XỬ LÝ LỖI HỆ THỐNG / KẾT NỐI
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? "Signup failed!"),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Text("An error occurred: ${e.toString()}"),
+          backgroundColor:
+              AppColors.price, // Dùng màu cam để cảnh báo lỗi hệ thống
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
