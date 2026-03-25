@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Đã thêm "${book.title}" vào giỏ' : 'Lỗi khi thêm vào giỏ'),
+        content: Text(success ? 'Added "${book.title}" into cart' : 'Error when add to cart'),
         backgroundColor: success ? Colors.green : Colors.red,
         duration: const Duration(seconds: 1),
       ),
