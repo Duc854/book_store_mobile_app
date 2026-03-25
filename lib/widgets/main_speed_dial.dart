@@ -31,6 +31,16 @@ class MainSpeedDial extends StatelessWidget {
             onTap: onRefresh,
           ),
         SpeedDialChild(
+          child: const Icon(Icons.local_shipping),
+          backgroundColor: Colors.teal,
+          label: 'Theo dõi',
+          onTap: () {
+            if (ModalRoute.of(context)?.settings.name != AppRoutes.trackingOrder) {
+              Navigator.pushNamed(context, AppRoutes.trackingOrder);
+            }
+          },
+        ),
+        SpeedDialChild(
           child: const Icon(Icons.person),
           backgroundColor: Colors.blue,
           label: 'Tài khoản',

@@ -7,3 +7,4 @@ export 'checkout_screen.dart';
 export 'product_list_screen.dart';
 export 'product_detail_screen.dart';
 export 'profile_screen.dart';
+export 'clone_tracking_order_screen.dart';

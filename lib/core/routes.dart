@@ -1,3 +1,4 @@
+import 'package:book_store_mobile_app/screens/profile_screen.dart';
 import 'package:book_store_mobile_app/widgets/admin_navbar.dart';
 import 'package:flutter/material.dart';
 import '../screens/screens.dart';
@@ -12,6 +13,7 @@ class AppRoutes {
   static const String cart = '/cart';
   static const String profile = '/profile';
   static const String admin = '/admin';
+  static const String trackingOrder = '/tracking-order';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -23,6 +25,7 @@ class AppRoutes {
       cart: (context) => const CartScreen(),
       profile: (context) => const ProfileScreen(),
       admin: (context) => const AdminNavbar(),
+      trackingOrder: (context) => const CloneTrackingOrderScreen(),
     };
   }
 

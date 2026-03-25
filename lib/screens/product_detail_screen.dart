@@ -83,13 +83,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: 8),
                 Text(book.description),
                 const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Added to cart (not implemented yet)')));
-                  },
-                  icon: const Icon(Icons.shopping_cart),
-                  label: const Text('Add to Cart'),
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: _isAdding ? null : () => _addToCart(book),
+                    icon: _isAdding 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.shopping_cart),
+                    label: Text(_isAdding ? 'Adding...' : 'Add to Cart'),
+                  ),
                 ),
               ],
             ),

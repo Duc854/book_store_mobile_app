@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.pushNamed(context, AppRoutes.products);
             },
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -79,8 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Best Sellers',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text(
+              'Best Sellers',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             Expanded(
               child: FutureBuilder<List<Book>>(
@@ -90,11 +92,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError || snapshot.data == null) {
-                    return const Center(child: Text('Unable to load best sellers'));
+                    return const Center(
+                      child: Text('Unable to load best sellers'),
+                    );
                   }
                   final books = _getPaginatedBooks();
                   if (books.isEmpty) {
-                    return const Center(child: Text('No best sellers available'));
+                    return const Center(
+                      child: Text('No best sellers available'),
+                    );
                   }
                   return ListView.separated(
                     scrollDirection: Axis.horizontal,
@@ -122,27 +128,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: book.imageUrl.isNotEmpty
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(book.imageUrl,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover),
+                                        child: Image.network(
+                                          book.imageUrl,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
                                       )
                                     : Container(
                                         color: Colors.grey.shade200,
                                         child: const Center(
-                                            child: Icon(Icons.book,
-                                                size: 50, color: Colors.grey)),
+                                          child: Icon(
+                                            Icons.book,
+                                            size: 50,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
                                       ),
                               ),
                               const SizedBox(height: 8),
-                              Text(book.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style:
-                                      const TextStyle(fontWeight: FontWeight.bold)),
-                              Text(book.author,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: Colors.grey)),
+                              Text(
+                                book.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                book.author,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
                               const SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -161,7 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     },
-                    separatorBuilder: (context, index) => const SizedBox(width: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 12),
                     itemCount: books.length,
                   );
                 },
@@ -203,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.pushNamed(context, AppRoutes.products);
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
