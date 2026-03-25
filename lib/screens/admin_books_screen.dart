@@ -15,6 +15,12 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   List<Book> books = [];
   List<Book> filteredBooks = [];
 
+  List<int> pageSizeOptions = [5, 10, 20];
+  int get totalPages => (filteredBooks.length / pageSize).ceil();
+
+  List<String> authors = ["All"];
+  String selectedAuthor = "All";
+
   bool loading = true;
 
   String authorFilter = "";
@@ -32,20 +38,23 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   }
 
   Future<void> loadBooks() async {
-    books = await AdminBookService.getBooks();
+  books = await AdminBookService.getBooks();
 
-    applyFilter();
+  authors = ["All"];
+  authors.addAll(books.map((b) => b.author).toSet().toList());
 
-    setState(() {
-      loading = false;
-    });
-  }
+  applyFilter();
+
+  setState(() {
+    loading = false;
+  });
+}
 
   void applyFilter() {
     filteredBooks = books.where((b) {
-      final matchAuthor = b.author.toLowerCase().contains(
-        authorFilter.toLowerCase(),
-      );
+      final matchAuthor = selectedAuthor == "All"
+          ? true
+          : b.author == selectedAuthor;
 
       final matchTitle = b.title.toLowerCase().contains(
         titleSearch.toLowerCase(),
@@ -94,221 +103,221 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   }
 
   void showBookDialog({Book? book}) async {
-  List<Category> categories = await AdminCategoryService.getCategories();
+    List<Category> categories = await AdminCategoryService.getCategories();
 
-  final title = TextEditingController(text: book?.title);
-  final author = TextEditingController(text: book?.author);
-  final price = TextEditingController(text: book?.price.toString());
-  final stock = TextEditingController(text: book?.stock.toString());
-  final image = TextEditingController(text: book?.imageUrl);
-  final description = TextEditingController(text: book?.description);
+    final title = TextEditingController(text: book?.title);
+    final author = TextEditingController(text: book?.author);
+    final price = TextEditingController(text: book?.price.toString());
+    final stock = TextEditingController(text: book?.stock.toString());
+    final image = TextEditingController(text: book?.imageUrl);
+    final description = TextEditingController(text: book?.description);
 
-  int? selectedCategoryId =
-      book?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
-final _formKey = GlobalKey<FormState>();
-  showDialog(
-  context: context,
-  builder: (_) {
-    return StatefulBuilder(
-      builder: (context, setStateDialog) {
-        return AlertDialog(
-          title: Text(book == null ? "Add Book" : "Edit Book"),
+    int? selectedCategoryId =
+        book?.categoryId ??
+        (categories.isNotEmpty ? categories.first.id : null);
+    final _formKey = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text(book == null ? "Add Book" : "Edit Book"),
 
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
+              content: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // ===== TITLE =====
+                      TextFormField(
+                        controller: title,
+                        decoration: InputDecoration(labelText: "Title"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Title không được để trống";
+                          }
+                          if (value.length < 3) {
+                            return "Title phải ≥ 3 ký tự";
+                          }
+                          return null;
+                        },
+                      ),
 
-                  // ===== TITLE =====
-                  TextFormField(
-                    controller: title,
-                    decoration: InputDecoration(labelText: "Title"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Title không được để trống";
-                      }
-                      if (value.length < 3) {
-                        return "Title phải ≥ 3 ký tự";
-                      }
-                      return null;
-                    },
+                      // ===== AUTHOR =====
+                      TextFormField(
+                        controller: author,
+                        decoration: InputDecoration(labelText: "Author"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Author không được để trống";
+                          }
+                          return null;
+                        },
+                      ),
+
+                      // ===== DESCRIPTION =====
+                      TextFormField(
+                        controller: description,
+                        decoration: InputDecoration(labelText: "Description"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Description không được để trống";
+                          }
+                          return null;
+                        },
+                      ),
+
+                      // ===== PRICE =====
+                      TextFormField(
+                        controller: price,
+                        decoration: InputDecoration(labelText: "Price"),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Price không được để trống";
+                          }
+
+                          final p = double.tryParse(value);
+                          if (p == null) {
+                            return "Price phải là số";
+                          }
+
+                          if (p <= 0) {
+                            return "Price phải > 0";
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      // ===== STOCK =====
+                      TextFormField(
+                        controller: stock,
+                        decoration: InputDecoration(labelText: "Stock"),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Stock không được để trống";
+                          }
+
+                          final s = int.tryParse(value);
+                          if (s == null) {
+                            return "Stock phải là số nguyên";
+                          }
+
+                          if (s < 0) {
+                            return "Stock không được âm";
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      // ===== IMAGE URL =====
+                      TextFormField(
+                        controller: image,
+                        decoration: InputDecoration(labelText: "Image URL"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Image URL không được để trống";
+                          }
+
+                          final uri = Uri.tryParse(value);
+                          if (uri == null || !uri.isAbsolute) {
+                            return "URL không hợp lệ";
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      // ===== CATEGORY =====
+                      DropdownButtonFormField<int>(
+                        value: selectedCategoryId,
+                        decoration: InputDecoration(labelText: "Category"),
+                        items: categories.map((c) {
+                          return DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setStateDialog(() {
+                            selectedCategoryId = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return "Vui lòng chọn category";
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-
-                  // ===== AUTHOR =====
-                  TextFormField(
-                    controller: author,
-                    decoration: InputDecoration(labelText: "Author"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Author không được để trống";
-                      }
-                      return null;
-                    },
-                  ),
-
-                  // ===== DESCRIPTION =====
-                  TextFormField(
-                    controller: description,
-                    decoration: InputDecoration(labelText: "Description"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Description không được để trống";
-                      }
-                      return null;
-                    },
-                  ),
-
-                  // ===== PRICE =====
-                  TextFormField(
-                    controller: price,
-                    decoration: InputDecoration(labelText: "Price"),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Price không được để trống";
-                      }
-
-                      final p = double.tryParse(value);
-                      if (p == null) {
-                        return "Price phải là số";
-                      }
-
-                      if (p <= 0) {
-                        return "Price phải > 0";
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  // ===== STOCK =====
-                  TextFormField(
-                    controller: stock,
-                    decoration: InputDecoration(labelText: "Stock"),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Stock không được để trống";
-                      }
-
-                      final s = int.tryParse(value);
-                      if (s == null) {
-                        return "Stock phải là số nguyên";
-                      }
-
-                      if (s < 0) {
-                        return "Stock không được âm";
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  // ===== IMAGE URL =====
-                  TextFormField(
-                    controller: image,
-                    decoration: InputDecoration(labelText: "Image URL"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Image URL không được để trống";
-                      }
-
-                      final uri = Uri.tryParse(value);
-                      if (uri == null || !uri.isAbsolute) {
-                        return "URL không hợp lệ";
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  // ===== CATEGORY =====
-                  DropdownButtonFormField<int>(
-                    value: selectedCategoryId,
-                    decoration: InputDecoration(labelText: "Category"),
-                    items: categories.map((c) {
-                      return DropdownMenuItem(
-                        value: c.id,
-                        child: Text(c.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setStateDialog(() {
-                        selectedCategoryId = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return "Vui lòng chọn category";
-                      }
-                      return null;
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
 
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancel"),
+                ),
 
-            ElevatedButton(
-              onPressed: () async {
+                ElevatedButton(
+                  onPressed: () async {
+                    // 🔥 VALIDATE FORM
+                    if (!_formKey.currentState!.validate()) return;
 
-                // 🔥 VALIDATE FORM
-                if (!_formKey.currentState!.validate()) return;
+                    Book newBook = Book(
+                      id: book != null ? book.id : 0,
+                      title: title.text,
+                      author: author.text,
+                      description: description.text,
+                      price: double.parse(price.text),
+                      imageUrl: image.text,
+                      stock: int.parse(stock.text),
+                      categoryId: selectedCategoryId!,
+                      rating: 0,
+                      isBestSeller: false,
+                      soldCount: 0,
+                    );
 
-                Book newBook = Book(
-                  id: book!.id,
-                  title: title.text,
-                  author: author.text,
-                  description: description.text,
-                  price: double.parse(price.text),
-                  imageUrl: image.text,
-                  stock: int.parse(stock.text),
-                  categoryId: selectedCategoryId!,
-                  rating : 0,
-                  isBestSeller: false,
-                  soldCount: 0,
-                );
+                    try {
+                      if (book == null) {
+                        await AdminBookService.createBook(newBook);
+                      } else {
+                        await AdminBookService.updateBook(newBook);
+                      }
 
-                try {
-                  if (book == null) {
-                    await AdminBookService.createBook(newBook);
-                  } else {
-                    await AdminBookService.updateBook(newBook);
-                  }
+                      Navigator.pop(context);
+                      await loadBooks();
 
-                  Navigator.pop(context);
-                  await loadBooks();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(book == null
-                          ? "Thêm thành công"
-                          : "Cập nhật thành công"),
-                    ),
-                  );
-
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Lỗi: $e")),
-                  );
-                }
-              },
-              child: Text("Save"),
-            ),
-          ],
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            book == null
+                                ? "Thêm thành công"
+                                : "Cập nhật thành công",
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
+                    }
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
-  },
-);
-}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -326,54 +335,74 @@ final _formKey = GlobalKey<FormState>();
               children: [
                 Padding(
                   padding: const EdgeInsets.all(10),
-
                   child: Column(
                     children: [
+                      // ===== Chọn số sách hiển thị =====
+                      Row(
+                        children: [
+                          const Text("Show: "),
+                          DropdownButton<int>(
+                            value: pageSize,
+                            items: pageSizeOptions.map((size) {
+                              return DropdownMenuItem(
+                                value: size,
+                                child: Text("$size per page"),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  pageSize = value;
+                                  currentPage = 1;
+                                });
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 20),
+                          // ===== Filter Author =====
+                          const Text("Author: "),
+                          DropdownButton<String>(
+                            value: selectedAuthor,
+                            items: authors.map((a) {
+                              return DropdownMenuItem(value: a, child: Text(a));
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  selectedAuthor = value;
+                                  applyFilter();
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // ===== Search Title =====
                       TextField(
                         decoration: const InputDecoration(
                           labelText: "Search by Title",
                         ),
-
                         onChanged: (value) {
                           titleSearch = value;
-
                           applyFilter();
-
                           setState(() {});
                         },
                       ),
 
                       const SizedBox(height: 10),
 
+                      // ===== Sort Price =====
                       Row(
                         children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: const InputDecoration(
-                                labelText: "Filter by Author",
-                              ),
-
-                              onChanged: (value) {
-                                authorFilter = value;
-
-                                applyFilter();
-
-                                setState(() {});
-                              },
-                            ),
-                          ),
-
-                          const SizedBox(width: 10),
-
                           ElevatedButton(
                             onPressed: () {
                               sortAsc = !sortAsc;
-
                               applyFilter();
-
                               setState(() {});
                             },
-
                             child: Text(sortAsc ? "Price ↑" : "Price ↓"),
                           ),
                         ],
@@ -381,7 +410,6 @@ final _formKey = GlobalKey<FormState>();
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: ListView.builder(
                     itemCount: paginatedBooks.length,
@@ -463,11 +491,10 @@ final _formKey = GlobalKey<FormState>();
 
                 Padding(
                   padding: const EdgeInsets.all(10),
-
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-
                     children: [
+                      // Prev button
                       ElevatedButton(
                         onPressed: prevPage,
                         child: const Text("Prev"),
@@ -475,14 +502,19 @@ final _formKey = GlobalKey<FormState>();
 
                       const SizedBox(width: 20),
 
-                      Text("Page $currentPage"),
+                      // Page info
+                      Text("Page $currentPage / $totalPages"),
 
                       const SizedBox(width: 20),
 
+                      // Next button
                       ElevatedButton(
                         onPressed: nextPage,
                         child: const Text("Next"),
                       ),
+
+                      const SizedBox(width: 20),
+                     
                     ],
                   ),
                 ),

@@ -70,8 +70,8 @@ class AdminBookService {
   }
 
   static Future<void> deleteBook(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/$id"));
-
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse("$baseUrl/$id"),  headers: headers, );
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception("Delete book failed: ${response.body}");
     }
